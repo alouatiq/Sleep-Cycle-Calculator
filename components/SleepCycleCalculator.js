@@ -1,9 +1,4 @@
 import React, { useState } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Moon, Sun, Clock } from 'lucide-react';
 
 const SleepCycleCalculator = () => {
   const [calculationType, setCalculationType] = useState('wakeUp');
@@ -45,50 +40,47 @@ const SleepCycleCalculator = () => {
   };
 
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Sleep Cycle Calculator</CardTitle>
-        <CardDescription className="text-center">Optimize your sleep schedule</CardDescription>
-      </CardHeader>
-      <CardContent>
+    <div className="w-full max-w-md mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="p-6">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-bold">Sleep Cycle Calculator</h2>
+          <p className="text-sm text-gray-500">Optimize your sleep schedule</p>
+        </div>
         <div className="space-y-6">
           <div className="space-y-2">
             <label className="text-sm font-medium">Calculation Type</label>
-            <Select onValueChange={(value) => setCalculationType(value)}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select calculation type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="wakeUp">
-                  <div className="flex items-center">
-                    <Sun className="w-4 h-4 mr-2" />
-                    I have to wake up at
-                  </div>
-                </SelectItem>
-                <SelectItem value="bedTime">
-                  <div className="flex items-center">
-                    <Moon className="w-4 h-4 mr-2" />
-                    I plan to go to bed at
-                  </div>
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <select 
+              className="w-full p-2 border rounded-md bg-background text-foreground"
+              value={calculationType}
+              onChange={(e) => setCalculationType(e.target.value)}
+            >
+              <option value="wakeUp">I have to wake up at</option>
+              <option value="bedTime">I plan to go to bed at</option>
+            </select>
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium">Time</label>
             <div className="relative">
-              <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <Input
+              <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+                {/* You can replace this with an actual clock icon if available */}
+                🕒
+              </span>
+              <input
                 type="time"
                 value={time}
                 onChange={(e) => setTime(e.target.value)}
-                className="pl-10 w-full"
+                className="pl-10 w-full p-2 border rounded-md"
               />
             </div>
           </div>
 
-          <Button onClick={calculateSleepCycles} className="w-full">Calculate</Button>
+          <button 
+            onClick={calculateSleepCycles} 
+            className="w-full bg-primary text-primary-foreground p-2 rounded-md hover:bg-primary/90"
+          >
+            Calculate
+          </button>
 
           {results.length > 0 && (
             <div className="mt-6 space-y-4">
@@ -97,7 +89,7 @@ const SleepCycleCalculator = () => {
               </h3>
               <div className="grid grid-cols-1 gap-3">
                 {results.map((result, index) => (
-                  <Card key={index} className="p-4 bg-secondary">
+                  <div key={index} className="p-4 bg-secondary rounded-md">
                     <div className="flex justify-between items-center">
                       <div>
                         <p className="text-2xl font-bold">{result.time}</p>
@@ -107,14 +99,14 @@ const SleepCycleCalculator = () => {
                         <p className="text-lg font-semibold">{result.cycles} cycles</p>
                       </div>
                     </div>
-                  </Card>
+                  </div>
                 ))}
               </div>
             </div>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 
