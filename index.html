@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sleep Cycle Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .toggle-bg:after {
+            content: '';
+            @apply absolute top-0.5 left-0.5 bg-white border border-gray-300 rounded-full h-5 w-5 transition shadow-sm;
+        }
+        
+        input:checked + .toggle-bg:after {
+            transform: translateX(100%);
+            @apply border-white;
+        }
+        
+        input:checked + .toggle-bg {
+            @apply bg-blue-600 border-blue-600;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-blue-50 to-indigo-100 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-4xl">
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-indigo-800 mb-3">
+                <i class="fas fa-moon text-indigo-600 mr-2"></i>
+                Sleep Cycle Calculator
+            </h1>
+            <p class="text-lg text-gray-600 max-w-2xl mx-auto">
+                Optimize your sleep schedule by waking up at the end of a sleep cycle. 
+                Each cycle lasts about 90 minutes, and waking between cycles helps you feel refreshed.
+            </p>
+        </header>
+
+        <main class="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div class="p-6 md:p-8">
+                <div class="flex flex-col md:flex-row gap-6 mb-8">
+                    <div class="flex-1">
+                        <h2 class="text-xl font-semibold text-gray-800 mb-4">Calculate Your Ideal Sleep Times</h2>
+                        
+                        <div class="flex items-center mb-6">
+                            <div class="mr-4">
+                                <input type="radio" id="wakeup-mode" name="mode" value="wakeup" checked class="hidden">
+                                <label for="wakeup-mode" class="flex items-center cursor-pointer">
+                                    <span class="relative inline-block w-12 h-6 rounded-full transition duration-200 ease-linear toggle-bg bg-blue-600 border-blue-600"></span>
+                                    <span class="ml-3 text-gray-700 font-medium">I want to wake up at</span>
+                                </label>
+                            </div>
+                            <div>
+                                <input type="radio" id="bedtime-mode" name="mode" value="bedtime" class="hidden">
+                                <label for="bedtime-mode" class="flex items-center cursor-pointer">
+                                    <span class="relative inline-block w-12 h-6 rounded-full transition duration-200 ease-linear toggle-bg bg-gray-200 border-gray-300"></span>
+                                    <span class="ml-3 text-gray-700 font-medium">I want to go to bed at</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div id="wakeup-input" class="mb-6">
+                            <label for="wakeup-time" class="block text-sm font-medium text-gray-700 mb-2">Wake-up Time</label>
+                            <input type="time" id="wakeup-time" value="07:00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div id="bedtime-input" class="mb-6 hidden">
+                            <label for="bedtime-time" class="block text-sm font-medium text-gray-700 mb-2">Bedtime</label>
+                            <input type="time" id="bedtime-time" value="23:00" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Number of Sleep Cycles</label>
+                            <div class="flex gap-2">
+                                <button data-cycles="3" class="cycle-btn px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-medium hover:bg-indigo-200 transition">3 (4.5h)</button>
+                                <button data-cycles="4" class="cycle-btn px-4 py-2 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition">4 (6h)</button>
+                                <button data-cycles="5" class="cycle-btn px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-medium hover:bg-indigo-200 transition">5 (7.5h)</button>
+                                <button data-cycles="6" class="cycle-btn px-4 py-2 bg-indigo-100 text-indigo-800 rounded-lg font-medium hover:bg-indigo-200 transition">6 (9h)</button>
+                            </div>
+                        </div>
+                        
+                        <button id="calculate-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
+                            <i class="fas fa-calculator mr-2"></i> Calculate Sleep Times
+                        </button>
+                    </div>
+                    
+                    <div class="flex-1">
+                        <div id="results-container" class="hidden fade-in">
+                            <h2 class="text-xl font-semibold text-gray-800 mb-4">Your Ideal Sleep Times</h2>
+                            <div class="bg-blue-50 rounded-lg p-4 mb-4">
+                                <p class="text-sm text-blue-800 mb-1">Based on your selection:</p>
+                                <p id="calculation-basis" class="font-medium text-blue-900"></p>
+                            </div>
+                            
+                            <div id="wakeup-results" class="space-y-3">
+                                <h3 class="font-medium text-gray-700">If you want to wake up refreshed at <span id="display-wakeup-time" class="font-bold text-indigo-700"></span>:</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Bedtime for</p>
+                                        <p class="font-bold text-indigo-800">5 cycles (7.5h)</p>
+                                        <p id="wakeup-5" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Bedtime for</p>
+                                        <p class="font-bold text-indigo-800">6 cycles (9h)</p>
+                                        <p id="wakeup-6" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Bedtime for</p>
+                                        <p class="font-bold text-indigo-800">4 cycles (6h)</p>
+                                        <p id="wakeup-4" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Bedtime for</p>
+                                        <p class="font-bold text-indigo-800">3 cycles (4.5h)</p>
+                                        <p id="wakeup-3" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="bedtime-results" class="space-y-3 hidden">
+                                <h3 class="font-medium text-gray-700">If you go to bed at <span id="display-bedtime-time" class="font-bold text-indigo-700"></span>:</h3>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Wake up after</p>
+                                        <p class="font-bold text-indigo-800">5 cycles (7.5h)</p>
+                                        <p id="bedtime-5" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Wake up after</p>
+                                        <p class="font-bold text-indigo-800">6 cycles (9h)</p>
+                                        <p id="bedtime-6" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Wake up after</p>
+                                        <p class="font-bold text-indigo-800">4 cycles (6h)</p>
+                                        <p id="bedtime-4" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                    <div class="bg-indigo-50 p-3 rounded-lg">
+                                        <p class="text-xs text-indigo-600">Wake up after</p>
+                                        <p class="font-bold text-indigo-800">3 cycles (4.5h)</p>
+                                        <p id="bedtime-3" class="text-2xl font-bold mt-1 text-indigo-600"></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="tips-section" class="mt-8 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg hidden fade-in">
+                            <div class="flex">
+                                <div class="flex-shrink-0">
+                                    <i class="fas fa-lightbulb text-yellow-500 text-xl"></i>
+                                </div>
+                                <div class="ml-3">
+                                    <h3 class="text-sm font-medium text-yellow-800">Sleep Optimization Tips</h3>
+                                    <div class="mt-2 text-sm text-yellow-700">
+                                        <p class="mb-2">• Try to maintain consistent sleep and wake times, even on weekends.</p>
+                                        <p class="mb-2">• Avoid screens 1 hour before bedtime to improve sleep quality.</p>
+                                        <p class="mb-2">• Keep your bedroom cool (around 65°F or 18°C) for optimal sleep.</p>
+                                        <p>• Limit caffeine intake in the afternoon and evening.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <footer class="mt-12 text-center text-gray-500 text-sm">
+            <p>Sleep cycles typically last 90 minutes. Waking up at the end of a cycle helps you feel more refreshed.</p>
+            <p class="mt-2">© 2023 Sleep Cycle Calculator. All calculations are approximate.</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mode toggle
+            const wakeupMode = document.getElementById('wakeup-mode');
+            const bedtimeMode = document.getElementById('bedtime-mode');
+            const wakeupInput = document.getElementById('wakeup-input');
+            const bedtimeInput = document.getElementById('bedtime-input');
+            const wakeupResults = document.getElementById('wakeup-results');
+            const bedtimeResults = document.getElementById('bedtime-results');
+            
+            // Set default selected cycle button
+            document.querySelector('[data-cycles="4"]').classList.add('bg-indigo-600', 'text-white');
+            document.querySelector('[data-cycles="4"]').classList.remove('bg-indigo-100', 'text-indigo-800');
+            
+            // Mode switch handler
+            document.querySelectorAll('input[name="mode"]').forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.value === 'wakeup') {
+                        wakeupInput.classList.remove('hidden');
+                        bedtimeInput.classList.add('hidden');
+                        document.querySelector('label[for="wakeup-mode"] .toggle-bg').classList.add('bg-blue-600', 'border-blue-600');
+                        document.querySelector('label[for="wakeup-mode"] .toggle-bg').classList.remove('bg-gray-200', 'border-gray-300');
+                        document.querySelector('label[for="bedtime-mode"] .toggle-bg').classList.remove('bg-blue-600', 'border-blue-600');
+                        document.querySelector('label[for="bedtime-mode"] .toggle-bg').classList.add('bg-gray-200', 'border-gray-300');
+                    } else {
+                        wakeupInput.classList.add('hidden');
+                        bedtimeInput.classList.remove('hidden');
+                        document.querySelector('label[for="wakeup-mode"] .toggle-bg').classList.remove('bg-blue-600', 'border-blue-600');
+                        document.querySelector('label[for="wakeup-mode"] .toggle-bg').classList.add('bg-gray-200', 'border-gray-300');
+                        document.querySelector('label[for="bedtime-mode"] .toggle-bg').classList.add('bg-blue-600', 'border-blue-600');
+                        document.querySelector('label[for="bedtime-mode"] .toggle-bg').classList.remove('bg-gray-200', 'border-gray-300');
+                    }
+                });
+            });
+            
+            // Cycle button selection
+            document.querySelectorAll('.cycle-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.cycle-btn').forEach(b => {
+                        b.classList.remove('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+                        b.classList.add('bg-indigo-100', 'text-indigo-800', 'hover:bg-indigo-200');
+                    });
+                    this.classList.add('bg-indigo-600', 'text-white', 'hover:bg-indigo-700');
+                    this.classList.remove('bg-indigo-100', 'text-indigo-800', 'hover:bg-indigo-200');
+                });
+            });
+            
+            // Calculate button handler
+            document.getElementById('calculate-btn').addEventListener('click', calculateSleepTimes);
+            
+            function calculateSleepTimes() {
+                const resultsContainer = document.getElementById('results-container');
+                const tipsSection = document.getElementById('tips-section');
+                const selectedMode = document.querySelector('input[name="mode"]:checked').value;
+                const selectedCycles = document.querySelector('.cycle-btn.bg-indigo-600').dataset.cycles;
+                
+                if (selectedMode === 'wakeup') {
+                    const wakeupTime = document.getElementById('wakeup-time').value;
+                    const [hours, minutes] = wakeupTime.split(':').map(Number);
+                    
+                    // Display the wakeup time being used for calculation
+                    document.getElementById('display-wakeup-time').textContent = formatTime(hours, minutes);
+                    
+                    // Calculate bedtimes for different cycles
+                    calculateAndDisplayBedtimes(hours, minutes);
+                    
+                    // Update calculation basis text
+                    document.getElementById('calculation-basis').textContent = `Calculating bedtimes to wake up at ${formatTime(hours, minutes)} with ${selectedCycles} sleep cycles.`;
+                    
+                    // Show wakeup results and hide bedtime results
+                    wakeupResults.classList.remove('hidden');
+                    bedtimeResults.classList.add('hidden');
+                } else {
+                    const bedtimeTime = document.getElementById('bedtime-time').value;
+                    const [hours, minutes] = bedtimeTime.split(':').map(Number);
+                    
+                    // Display the bedtime being used for calculation
+                    document.getElementById('display-bedtime-time').textContent = formatTime(hours, minutes);
+                    
+                    // Calculate wake-up times for different cycles
+                    calculateAndDisplayWakeupTimes(hours, minutes);
+                    
+                    // Update calculation basis text
+                    document.getElementById('calculation-basis').textContent = `Calculating wake-up times when going to bed at ${formatTime(hours, minutes)} with ${selectedCycles} sleep cycles.`;
+                    
+                    // Show bedtime results and hide wakeup results
+                    wakeupResults.classList.add('hidden');
+                    bedtimeResults.classList.remove('hidden');
+                }
+                
+                // Show results and tips
+                resultsContainer.classList.remove('hidden');
+                tipsSection.classList.remove('hidden');
+            }
+            
+            function calculateAndDisplayBedtimes(wakeupHours, wakeupMinutes) {
+                // Calculate time in minutes since midnight
+                const wakeupTotalMinutes = wakeupHours * 60 + wakeupMinutes;
+                
+                // Calculate bedtimes for different cycles (subtracting sleep time)
+                const cycles = {
+                    3: 270,  // 4.5 hours (3 cycles)
+                    4: 360,  // 6 hours (4 cycles)
+                    5: 450,  // 7.5 hours (5 cycles)
+                    6: 540   // 9 hours (6 cycles)
+                };
+                
+                for (const [cyclesCount, minutes] of Object.entries(cycles)) {
+                    let bedtimeTotalMinutes = wakeupTotalMinutes - minutes;
+                    if (bedtimeTotalMinutes < 0) bedtimeTotalMinutes += 1440; // Add a day if negative
+                    
+                    const bedtimeHours = Math.floor(bedtimeTotalMinutes / 60) % 24;
+                    const bedtimeMins = bedtimeTotalMinutes % 60;
+                    
+                    document.getElementById(`wakeup-${cyclesCount}`).textContent = formatTime(bedtimeHours, bedtimeMins);
+                }
+            }
+            
+            function calculateAndDisplayWakeupTimes(bedtimeHours, bedtimeMinutes) {
+                // Calculate time in minutes since midnight
+                const bedtimeTotalMinutes = bedtimeHours * 60 + bedtimeMinutes;
+                
+                // Calculate wake-up times for different cycles (adding sleep time)
+                const cycles = {
+                    3: 270,  // 4.5 hours (3 cycles)
+                    4: 360,  // 6 hours (4 cycles)
+                    5: 450,  // 7.5 hours (5 cycles)
+                    6: 540   // 9 hours (6 cycles)
+                };
+                
+                for (const [cyclesCount, minutes] of Object.entries(cycles)) {
+                    let wakeupTotalMinutes = bedtimeTotalMinutes + minutes;
+                    if (wakeupTotalMinutes >= 1440) wakeupTotalMinutes -= 1440; // Subtract a day if over
+                    
+                    const wakeupHours = Math.floor(wakeupTotalMinutes / 60) % 24;
+                    const wakeupMins = wakeupTotalMinutes % 60;
+                    
+                    document.getElementById(`bedtime-${cyclesCount}`).textContent = formatTime(wakeupHours, wakeupMins);
+                }
+            }
+            
+            function formatTime(hours, minutes) {
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const displayHours = hours % 12 || 12;
+                return `${displayHours}:${minutes.toString().padStart(2, '0')} ${period}`;
+            }
+            
+            // Initial calculation on page load
+            calculateSleepTimes();
+        });
+    </script>
+</body>
+</html>
